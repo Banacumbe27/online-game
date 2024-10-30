@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telekinisis</title>
+    <style>
+        body{
+            background:linear-gradient(to right,white,black);
+            overflow:hidden;
+        }
+        .logo{
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            font-size:10vmax;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;  
+            transform:translateY(20vh);
+            animation:10s shift-logo linear infinite;
+        }
+        .logo div{
+            height:100%;
+            width:100%;
+            backdrop-filter: blur(50px);
+            -webkit-backdrop-filter: blur(50px);
+            z-index:100;
+            position:absolute;
+            top:0;
+            left:0;
+            opacity:0.5;
+            pointer-events: none;
+        }
+        .menu{
+            display:flex;
+            gap:2vmin;
+            justify-content: center;
+            align-items: center;  
+            transform:translateY(40vh);
+        }
+        .menu div{
+            width:fit-content;
+            height:fit-content;
+            border:2px solid green;
+            font-family: 'Courier New', Courier, monospace;
+            font-size:6vmax;
+            background:white;
+            padding:none;
+            margin:none;
+            user-select: none;
+            cursor:pointer;
+            color:black;
+        }
+        .menu div:active{
+            scale:0.8;
+        }
+        @keyframes shift-logo{
+            0%{
+                color:rgba(255,0,0,255);
+                rotate:0deg;
+            }
+            25%{
+                color:rgba(0,255,0,255);
+                rotate:10deg;
+            }
+            50%{
+                color:rgba(0,0,255,255);
+                rotate:0deg;
+            }
+            75%{
+                color:rgba(0,255,0,255);
+                rotate:-10deg;
+            }
+            100%{
+                color:rbga(255,0,0,255);
+                rotate:0deg;
+            }
+        }
+        .howtoplay{
+            opacity:0;
+            scale:0;
+            width:100vw;
+            height:100vh;
+            transition:0.5s;
+            background:peachpuff;
+            font-size:3em;
+            position:absolute;
+            z-index:10;
+            top:0;
+            left:0;
+        }
+        .server-menu{
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            transition:opacity 0.15s ease-in-out;
+            width:100vw;
+            height:100vh;
+            z-index:10;
+            opacity:1;
+            position:absolute;
+            top:0;
+            left:0;
+            opacity:0;
+            pointer-events: none;
+        }
+        .serverlist{
+            display:flex;
+            flex-direction: column;
+            gap:2vmax;
+            position:absolute;
+            width:60vw;
+            left:20vw;
+            transition: 0.2s linear;
+   }
+        @keyframes popout{
+            from{
+                opacity:0;
+            }
+            to{
+                opacity:1;
+            }
+        }
+        .serverlist-label{/*server labels*/
+            font-size:4vmax;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            border:2px solid black;
+            width:fit-content;
+            min-width: 60vw;
+            height:fit-content;
+            padding:2%;
+            background:rgba(255,255,255,0.5);
+            cursor:pointer;
+            user-select: none;
+          /*  animation:0.5s popout ease forwards;*/
+
+        }
+        .serverlist-form{
+            content:'';
+        }
+        .serverlist-createroom{
+            font-size:5vmax;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            border:2px solid black;
+            height:fit-content;
+            width:fit-content;
+            padding:2%;
+            border-radius: 100%;
+            background:white;
+            cursor:pointer;
+            user-select: none;
+            z-index:1000;
+            transition:0.05s linear;
+        }
+        .serverlist-createroom:hover{
+            scale:1.2;
+            background:lime;
+        }
+        .serverlist-createroom:active{
+        scale:0.8;
+    }
+    .serverlist-form-member{
+        display:flex;
+        gap:2vmax;
+        flex-direction: column;
+        bottom:1vh;
+        position:absolute;
+        align-items: center;
+    }
+        .loading{/*loading cube*/
+            background:green;
+            width:10vmax;
+            height:10vmax;
+            position:absolute;
+            top:10vh;
+            left:20vw;
+            animation:1s loading ease-in-out infinite;
+        }
+        @keyframes loading{
+            50%{
+                background:grey;
+                rotate:360deg;
+                border-radius: 100%;
+            }
+            100%{
+                background:green;
+                rotate:0deg;
+                border-radius: 0%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="server-menu" onclick="toggle_serverlist()" >
+        <form onclick="event.stopPropagation()" class="serverlist-form" onsubmit="post_request(event)" autocomplete="off" >
+        <div class="serverlist-form-member">
+            <input style="display:none" name="requestType" value="create">
+        <input style="font-size:2em;z-index:1000;" placeholder="ServerName..." name="servername" maxlength="10"  required>
+        <input type="submit" class="serverlist-createroom"  value="Create">
+    </div>
+
+        </form>
+        <div class="serverlist">
+            <div class="loading"></div>
+        </div>
+    </div>
+    <div class="logo">Telekinisis v1.0
+    <div></div> <!--this is the frosted glass cool thingy-->
+    </div>
+    <div class="menu"></div>
+    <div class="howtoplay">One must guess something of the other, I will add more detail once I am done<a href="javascript:toggle_howtoplay()">CLOSE</a></div>
+</body>
+<script>
+    const menu = document.querySelector('.menu');
+    const how_to_play = document.querySelector('.howtoplay');
+    const button_labels = ['HOW TO PLAY?', 'START GAME'];
+    const button_functions = [toggle_howtoplay, toggle_serverlist]; 
+
+    button_labels.forEach((label, index) => {
+        const button = document.createElement('div');
+        button.textContent = label;
+        button.onclick = button_functions[index];
+        menu.appendChild(button);
+    });
+
+    let howtoplay_opened = false;
+    function preventClose(e){
+        e.stopPropagation();
+    }
+    function toggle_howtoplay() {
+        how_to_play.style.scale = howtoplay_opened ? '0' : '1';
+        how_to_play.style.opacity = howtoplay_opened ? '0' : '1';
+        howtoplay_opened = !howtoplay_opened;
+
+    }
+    let serverlist_opened=false;
+    const server_menu=document.querySelector('.server-menu');
+    function toggle_serverlist(){
+        server_menu.style.pointerEvents=serverlist_opened?'none':'auto';
+        server_menu.style.opacity=serverlist_opened?'0':'1';
+        serverlist_opened=!serverlist_opened;
+
+    }
+
+    // Backend
+    const deploy_id = 'AKfycbxwgDsrhDKnAF2TtlvrbG2W6OfUVfEdWyoIiJUOhK7jO4raXNtPOxFenBPR25dTKqzM';
+    const backend_url = `https://script.google.com/macros/s/${deploy_id}/exec`;
+
+    function post_request(e) {
+        e.preventDefault();
+        let data=new FormData(document.querySelector('.serverlist-form'))
+        fetch(backend_url, {
+            method: 'POST',
+            body:data,
+            mode:'no-cors'
+        })
+        .then(response => response.text())
+        .then(data => {
+            console.log('Request sent!'); // Handle the response data
+        })
+        .catch(error => {
+            console.error("Fetch error:", error);
+        });
+    }
+
+    const serverlist_display=document.querySelector('.serverlist');
+    let currentPos=0;
+    server_menu.onwheel=e=>{
+        currentPos+=e.deltaY;
+        console.log(currentPos);
+        currentPos=currentPos>=serverlist_display.clientHeight-window.innerHeight?serverlist_display.clientHeight-0.8*window.innerHeight:currentPos;
+        currentPos=Math.max(currentPos,0);
+        serverlist_display.style.transform=`translateY(${-currentPos}px)`;
+    };
+    function getserverlist() {
+        fetch(backend_url)
+        .then(response => response.json())
+        .then(serverlist => {
+            let i=0;
+            serverlist_display.innerHTML='';
+            if(serverlist.length>1){
+            serverlist.forEach(data => {i++;
+                if(data.serverName.length>0){
+                const server_label=document.createElement('div'); 
+                server_label.textContent=`${data.serverName}__${data.serverCode}__${ howLongAgo(new Date(data.timeCreated))}`;
+                server_label.classList.add('serverlist-label')
+                serverlist_display.appendChild(server_label);
+                server_label.onclick=()=>{
+                    window.location.href='game_room.html';
+                };
+            }
+            });
+        }
+        else{
+            const server_label=document.createElement('div');
+            server_label.textContent='Such empty :( please invite your friends to play my game';
+            server_label.classList.add('serverlist-label')
+            serverlist_display.appendChild(server_label);
+        }
+        })
+        .catch(error => {
+            console.error('Error fetching server list:', error);
+        });
+    }
+setInterval(getserverlist,1000); 
+function howLongAgo(date) {
+    let answer = "";
+    let currentDate = new Date();
+    
+    // Calculate the difference in each time unit
+    const years = currentDate.getFullYear() - date.getFullYear();
+    const months = currentDate.getMonth() - date.getMonth();
+    const days = currentDate.getDate() - date.getDate();
+    const hours = currentDate.getHours() - date.getHours();
+    const minutes = currentDate.getMinutes() - date.getMinutes();
+
+    // Add each time unit to the answer string if it's greater than zero
+    if (years > 0) answer += years + 'yrs';
+    if (months > 0) answer += months + 'months';
+    if (days > 0) answer += days + 'days';
+    if (hours > 0) answer += hours + 'hour';
+    if (minutes > 0) answer += minutes + 'min';
+    if (answer.length==0)answer='just now';
+    return answer.trim();
+}
+
+</script>
+
+</html>
