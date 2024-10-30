@@ -8,7 +8,13 @@
         body{
             background:linear-gradient(to right,white,black);
             overflow:hidden;
+            height: calc(var(--vh, 1vh) * 100);
+
         }
+        .menu, .logo, .server-menu {
+            transform: translateY(calc(var(--vh, 1vh) * 40));
+        }
+        
         .logo{
             font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
             font-size:10vmax;
@@ -221,12 +227,21 @@
         button.onclick = button_functions[index];
         menu.appendChild(button);
     });
-
-    let howtoplay_opened = false;
-    function preventClose(e){
-        e.stopPropagation();
+    function adjustLayoutForKeyboard() {
+        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     }
-    function toggle_howtoplay() {
+    
+    // Call this function initially and on resize
+    window.addEventListener('resize', adjustLayoutForKeyboard);
+    adjustLayoutForKeyboard();
+    
+    document.querySelectorAll('input, textarea').forEach((input) => {
+        input.addEventListener('focus', () => {
+            window.scrollTo(0, 0);
+        });
+    });
+    let howtoplay_opened = false;
+        function toggle_howtoplay() {
         how_to_play.style.scale = howtoplay_opened ? '0' : '1';
         how_to_play.style.opacity = howtoplay_opened ? '0' : '1';
         howtoplay_opened = !howtoplay_opened;
